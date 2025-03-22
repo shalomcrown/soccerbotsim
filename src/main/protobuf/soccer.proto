@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+
+enum ParticipantType {
+	TEAM = 0;
+	OBSERVER = 1;
+	REFEREE = 3;
+}
+
+message ParticipantConnection {
+  string name = 1;
+  ParticipantType participantType  = 2;
+}
+
+message Vec3 {
+	float x = 1;
+	float y = 2;
+	float z = 3;
+}
+
+message GoalPosition {
+	Vec3 post1 = 1;
+	Vec3 post2 = 2;
+	float height = 3;
+}
+
+message TeamDisposition {
+	string teamName = 1;
+	repeated Vec3 pitchHalf = 2;
+	GoalPosition ownGoal = 3;
+	GoalPosition opponentGoal = 4;
+	bool kickingOff = 5;
+}
+
+message GameSetup {
+	repeated Vec3 pitchCorners = 1;
+	int32 playersPerTeam = 2;
+	float teamPlayersTotalMass = 3;
+	float teamPlayersTotalArea = 4;
+	float teamPlayersTotalPotentialEnergy = 5;
+	float coefficientOfFrictionPlayer = 6;
+	float coefficientOfFrictionBall = 7;
+	float gameDurationSeconds = 8;
+	float simulationSpeed = 9;
+	repeated TeamDisposition teamsDispositions = 10;
+}
+
+message PlayerIdentification {
+	int32 jerseyNumber = 1;
+	string name = 2;
+	float mass = 3;
+	float initialPotentialEnergy = 4;
+	bool active = 5;
+	Vec3 startPosition = 6;
+}
+
+message TeamSetup {
+	string teamName = 1;
+	repeated PlayerIdentification players = 2;
+}
+
+message PlayerState {
+	int32 jerseyNumber = 1;
+	Vec3 position = 3;
+	Vec3 velocity = 4;
+	bool active = 5;
+}
+
+message TeamState {
+	string teamName = 1;
+	string goals = 2;
+	repeated PlayerState playerState = 3;
+}
+
+message BallState {
+	int32 ballNumber = 1;
+	Vec3 position = 3;
+	Vec3 velocity = 4;
+}
+
+enum GameStateType {
+	NOT_STARTED = 0;
+	SUSPENDED = 1;
+	BREAK = 2;
+	FINISHED = 3;
+}
+
+message GameState {
+	int32 gameTime = 1;
+	int32 wallclockTime = 2;
+	int32 gameHalf = 3;
+	GameStateType gameState = 4;
+	repeated TeamState teamStates = 5;
+	repeated BallState ballStates = 6;
+}
+
+enum GameEventType {
+	KICKOFF = 0;
+	GOAL = 1;
+	FREE_KICK = 2;
+	OFFSIDE = 3;
+	GOAL_KICK = 4;
+	CORNER = 5;
+}
+
+message GameEvent {
+	GameEventType gameEventType = 1;
+	Vec3 eventPosition = 2;
+	Vec3 restartPosition = 3;
+	string benefitingTeam = 4;
+}
+
+
