@@ -61,6 +61,7 @@ message TeamSetup {
 
 message PlayerState {
 	int32 jerseyNumber = 1;
+	string teamName = 2;
 	Vec3 position = 3;
 	Vec3 velocity = 4;
 	bool active = 5;
@@ -109,5 +110,14 @@ message GameEvent {
 	Vec3 restartPosition = 3;
 	string benefitingTeam = 4;
 }
+
+message PlayerMovementRequest {
+	int32 jerseyNumber = 1;
+	string teamName = 2;
+	float impulseRequestNewtons = 3;
+	float impulseDurationSeconds = 4;
+	Vec3 impulseDirection = 5;
+}
+
 
 
