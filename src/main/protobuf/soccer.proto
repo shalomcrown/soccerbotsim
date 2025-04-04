@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-
 enum ParticipantType {
 	TEAM = 0;
 	OBSERVER = 1;
@@ -15,7 +14,7 @@ message ParticipantConnection {
 message Vec3 {
 	float x = 1;
 	float y = 2;
-	float z = 3;
+	optional float z = 3;
 }
 
 message GoalPosition {
@@ -35,13 +34,13 @@ message TeamDisposition {
 message GameSetup {
 	repeated Vec3 pitchCorners = 1;
 	int32 playersPerTeam = 2;
-	float teamPlayersTotalMass = 3;
-	float teamPlayersTotalArea = 4;
-	float teamPlayersTotalPotentialEnergy = 5;
-	float coefficientOfFrictionPlayer = 6;
-	float coefficientOfFrictionBall = 7;
-	float gameDurationSeconds = 8;
-	float simulationSpeed = 9;
+	optional float teamPlayersTotalMass = 3;
+	optional  float teamPlayersTotalArea = 4;
+	optional float teamPlayersTotalPotentialEnergy = 5;
+	optional float coefficientOfFrictionPlayer = 6;
+	optional float coefficientOfFrictionBall = 7;
+	optional float gameDurationSeconds = 8;
+	optional float simulationSpeed = 9;
 	repeated TeamDisposition teamsDispositions = 10;
 }
 
@@ -88,8 +87,8 @@ enum GameStateType {
 
 message GameState {
 	int32 gameTime = 1;
-	int32 wallclockTime = 2;
-	int32 gameHalf = 3;
+	optional int32 wallclockTime = 2;
+	optional int32 gameHalf = 3;
 	GameStateType gameState = 4;
 	repeated TeamState teamStates = 5;
 	repeated BallState ballStates = 6;
@@ -106,9 +105,9 @@ enum GameEventType {
 
 message GameEvent {
 	GameEventType gameEventType = 1;
-	Vec3 eventPosition = 2;
-	Vec3 restartPosition = 3;
-	string benefitingTeam = 4;
+	optional Vec3 eventPosition = 2;
+	optional Vec3 restartPosition = 3;
+	optional string benefitingTeam = 4;
 }
 
 message PlayerMovementRequest {

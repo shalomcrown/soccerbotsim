@@ -14,6 +14,8 @@ import sys
 import logging.handlers
 import threading
 
+# sudo apt install protobuf-compiler python3-protobuf
+# sudo apt install  python3-paho-mqtt mosquitto-clients mosquitto
 
 localDir = os.path.dirname(__file__)
 sys.path.append(localDir)
@@ -27,8 +29,8 @@ import paho.mqtt.client as mqtt
 
 class Referee:
     def __init__(self):
-        self.gameState = gameState()
-        self.gameState.gameState = GameStateType.NOT_STARTED
+        self.gameState = sc.GameState()
+        self.gameState.gameState = sc.GameStateType.NOT_STARTED
         
         self.mqclient = mqtt.Client(client_id="Refereee",
                      transport="TCP",
@@ -36,7 +38,7 @@ class Referee:
         
         
 
-
+# ===========================================================================
 
 def setupLogging():
 
@@ -62,6 +64,7 @@ def setupLogging():
 
 
 
+# ===========================================================================
 
 
 if __name__ == '__main__':
