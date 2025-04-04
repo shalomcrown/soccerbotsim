@@ -23,6 +23,21 @@ import soccer_pb2 as sc
 import paho.mqtt.client as mqtt
 
 
+# ===========================================================
+
+class Referee:
+    def __init__(self):
+        self.gameState = gameState()
+        self.gameState.gameState = GameStateType.NOT_STARTED
+        
+        self.mqclient = mqtt.Client(client_id="Refereee",
+                     transport="TCP",
+                     protocol=mqtt.MQTTv5)
+        
+        
+
+
+
 def setupLogging():
 
     logdir = '/tmp/soccer/logs'
@@ -44,6 +59,7 @@ def setupLogging():
     outhandler.setFormatter(formatter)
     logger.addHandler(outhandler)
     logger.debug("Starting up")
+
 
 
 
