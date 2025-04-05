@@ -35,7 +35,7 @@ message GameSetup {
 	repeated Vec3 pitchCorners = 1;
 	int32 playersPerTeam = 2;
 	optional float teamPlayersTotalMass = 3;
-	optional  float teamPlayersTotalArea = 4;
+	optional float teamPlayersTotalArea = 4;
 	optional float teamPlayersTotalPotentialEnergy = 5;
 	optional float coefficientOfFrictionPlayer = 6;
 	optional float coefficientOfFrictionBall = 7;
@@ -83,6 +83,7 @@ enum GameStateType {
 	SUSPENDED = 1;
 	BREAK = 2;
 	FINISHED = 3;
+	WAITING_FOR_TEAMS = 4;
 }
 
 message GameState {
