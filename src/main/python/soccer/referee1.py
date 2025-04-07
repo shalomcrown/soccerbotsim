@@ -39,12 +39,15 @@ class Referee:
         self.gameState.gameState = sc.GameStateType.WAITING_FOR_TEAMS
         self.teamNames = []
 
+        self.pitchLength = 200
+        self.pitchWidth = 100
+
         self.gameSetup = sc.GameSetup()
         self.gameSetup.pitchCorners.extend([
             sc.Vec3(x=0, y=0),
-            sc.Vec3(x=200, y=0),
-            sc.Vec3(x=200, y=100),
-            sc.Vec3(x=0, y=100),
+            sc.Vec3(x=self.pitchLength, y=0),
+            sc.Vec3(x=self.pitchLength, y=self.pitchWidth),
+            sc.Vec3(x=0, y=self.pitchWidth),
             ])
         
         self.gameSetup.playersPerTeam = 1
@@ -99,8 +102,38 @@ class Referee:
         logger.debug(f"Message {msg} from {message.topic}")
 
         if msg.participantType == sc.ParticipantType.TEAM:
+            if len(self.teamNames) == 2:
+                logger.debug(f"Already have two teams - ignore {msg.name}")
+                return
+
             self.teamNames.append(msg.name)
             logger.debug(f"Got a team {msg.name}")
+
+            if len(self.teamNames) == 2:
+                logger.debug("Got two teams - can update dispositions")
+                for i, teamName in enumerate(self.teamNames):
+                    teamDisposition = sc.TeamDisposition()
+                    teamDisposition.teamName = teamName
+                    teamDisposition.pitchHalf.extend((
+                        sc.Vec3(x = i * self.pitchLength / len(self.teamNames), y = 0),
+                        sc.Vec3(x = (i + 1) * self.pitchLength / len(self.teamNames), y = 0),
+                        sc.Vec3(x = (i + 1) * self.pitchLength / len(self.teamNames), y = self.pitchWidth),
+                        sc.Vec3(x = i * self.pitchLength / len(self.teamNames), y = self.pitchWidth),
+                        ))
+                    
+                    teamDisposition.ownGoal.height = 3
+                    teamDisposition.ownGoal.post1.x = i * self.pitchLength
+                    teamDisposition.ownGoal.post1.y = self.pitchWidth / 2 - 3
+                    teamDisposition.ownGoal.post2.x = i * self.pitchLength
+                    teamDisposition.ownGoal.post2.y = self.pitchWidth / 2 + 3
+
+                    teamDisposition.kickingOff = True if i == 0 else False
+                    self.gameSetup.teamsDispositions.append(teamDisposition)
+                
+                self.gameSetup.teamsDispositions[0].opponentGoal.CopyFrom(self.gameSetup.teamsDispositions[1].ownGoal)
+                self.gameSetup.teamsDispositions[1].opponentGoal.CopyFrom(self.gameSetup.teamsDispositions[0].ownGoal)
+                self.mqclient.publish(utils.GAME_TOPIC, self.gameSetup.SerializeToString(), retain=True)
+
 
     #=================================================================================
 
@@ -128,8 +161,8 @@ class Referee:
 
 # ===========================================================================
 
-
-if __name__ == '__main__':
+def startup():
+    global logger
     logger = utils.setupLogging();
     ref = Referee()
 
@@ -139,5 +172,8 @@ if __name__ == '__main__':
     teamRed = Process(target=team1.createTeam, args=("Red",))
     teamRed.start()
 
-    ref.runGame()
+    ref.runGame()    
+
+if __name__ == '__main__':
+    startup()
 

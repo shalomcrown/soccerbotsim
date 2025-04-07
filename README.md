@@ -103,12 +103,12 @@ The main flow is as follows:
 - The referee uses the topic soccer/game to publish information visible to 
 everyone.
 
-- The referee publishes the GameSetup message (retained) on this topic, and the teams reply with their TeamSetup messages on their private topics. The 
+- The referee publishes the GameSetup message (retained) on this topic, and the teams reply with their TeamSetup messages on their private topics soccer/game/team-name/setup. The 
 team kicking off has its chosen player in the center circle, and the other
 team(s) has its players outside this circle. These are indicated by the 
 starting positions.
 
-- Once that has been done, the referee publishes the initial GameState and sets it to retained.
+- Once that has been done, the referee publishes the initial GameState on soccer/game/state and sets it to retained.
 
 - Then the referee publishes a GameEvent which specifies which team kicks 
 off. At this stage. both teams have 
