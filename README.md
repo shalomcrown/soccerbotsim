@@ -98,7 +98,7 @@ The main flow is as follows:
 - Participants connect to the message broker and send their 
 *ParticipantConnection* messages as retained, to topic soccer/participants/xxxx where xxxx is the participant name.
 
-- Teams use the topic soccer/team/xxxx to send private information to the referee
+- Teams use the topic soccer/team/xxxx to send private information to the referee where xxxx is the name of the team
 
 - The referee uses the topic soccer/game to publish information visible to 
 everyone.

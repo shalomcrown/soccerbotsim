@@ -8,30 +8,36 @@ import logging
 import datetime
 import time
 import traceback
-import threading
 import datetime
 import sys
 import logging.handlers
-import threading
+import paho.mqtt.client as mqtt
+from multiprocessing import Process
 
-# sudo apt install protobuf-compiler python3-protobuf
-# sudo apt install  python3-paho-mqtt mosquitto-clients mosquitto
+# sudo apt install protobuf-compiler python3-protobuf python3-paho-mqtt mosquitto-clients mosquitto
+# 
 
 localDir = os.path.dirname(__file__)
 sys.path.append(localDir)
 sys.path.append(os.path.join(localDir, "../../protobuf"))
 
 import soccer_pb2 as sc
-import paho.mqtt.client as mqtt
+import team1
+import utils
 
-GAME_TOPIC = "soccer/game"
+logger = None
+
+REFEREE_NAME = "Referee1"
+REFEREE_TOPIC = utils.PARTICIPANTS_TOPIC + REFEREE_NAME
 
 # ===========================================================
 
 class Referee:
     def __init__(self):
         self.gameState = sc.GameState()
+        self.started = False
         self.gameState.gameState = sc.GameStateType.WAITING_FOR_TEAMS
+        self.teamNames = []
 
         self.gameSetup = sc.GameSetup()
         self.gameSetup.pitchCorners.extend([
@@ -48,46 +54,75 @@ class Referee:
         self.gameSetup.coefficientOfFrictionPlayer = 0.3;
         self.gameSetup.gameDurationSeconds = 90 * 60;
 
-        
-        self.mqclient = mqtt.Client(client_id="Refereee",
+        self.participant = sc.ParticipantConnection()
+        self.participant.name = "Referee1"
+        self.participant.participantType = sc.ParticipantType.REFEREE
+
+
+        from paho.mqtt.properties import Properties
+        from paho.mqtt.packettypes import PacketTypes 
+        properties=Properties(PacketTypes.CONNECT)
+        properties.SessionExpiryInterval=120*60 # in seconds
+
+        self.mqclient = mqtt.Client(client_id="Referee",
                      transport="TCP",
                      protocol=mqtt.MQTTv5)
-        self.mqclient.connect()
+        
+        self.mqclient.connect('localhost',
+                     clean_start = True,
+                     keepalive=0,
+                     properties=properties)
 
-        result = self.mqclient.publish(GAME_TOPIC, self.gameSetup.)
+        self.mqclient.message_callback = self.otherMessages
+
+        logger.debug("Publish game setup")
+        self.mqclient.publish(REFEREE_TOPIC, self.participant.SerializeToString(), retain=True)
+        self.mqclient.publish(utils.GAME_TOPIC, self.gameSetup.SerializeToString(), retain=True)
+
+        self.mqclient.subscribe(utils.TEAM_SUB)
+        self.mqclient.message_callback_add(utils.TEAM_SUB, self.teamMessage)
+
+        self.mqclient.subscribe(utils.PARTICIPANTS_TOPIC + "#")
+        self.mqclient.message_callback_add(utils.PARTICIPANTS_TOPIC + "#", self.participantsMessage)
+
+        self.mqclient.loop_start()
+
+        #=================================================================================
+
+    def participantsMessage(self, client, userdata, message):
+        if not self.started:
+            logger.debug(f"Ignore Message {message} from {message.topic}")
+            return
+        
+        msg = sc.ParticipantConnection()
+        msg.ParseFromString(message.payload)
+        logger.debug(f"Message {msg} from {message.topic}")
+
+        if msg.participantType == sc.ParticipantType.TEAM:
+            self.teamNames.append(msg.name)
+            logger.debug(f"Got a team {msg.name}")
+
+    #=================================================================================
+
+    def teamMessage(self, client, userdata, message):
+        if not self.started:
+            logger.debug(f"Ignore Message {message} from {message.topic}")
+            return
+        logger.debug(f"Message {message} from {message.topic}")
+
+    def otherMessages(self, client, userdata, message):
+        if not self.started:
+            logger.debug(f"Ignore Message {message} from {message.topic}")
+            return
+        logger.debug(f"Message {message} from {message.topic}")
 
     # ===========================================================================
 
     def runGame(self):
-        pass
-        
-
-        
-
-
-# ===========================================================================
-
-def setupLogging():
-
-    logdir = '/tmp/soccer/logs'
-    logger = logging.getLogger('soccer')
-    logger.setLevel(logging.DEBUG)
-    if not os.path.exists(logdir):
-        os.makedirs(logdir)
-    
-    handler = logging.handlers.RotatingFileHandler(os.path.join(logdir, 'klvplayerQt5.log'),
-                                                backupCount=30, maxBytes=1024 * 1024 * 10)
-    
-    formatter = logging.Formatter('[%(levelname)s] %(asctime)s  %(filename)s(%(lineno)d)  %(funcName)s %(message)s')
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    
-    outhandler = logging.StreamHandler()
-    outhandler.setLevel(logging.DEBUG)
-    outhandler.setFormatter(formatter)
-    logger.addHandler(outhandler)
-    logger.debug("Starting up")
+        time.sleep(0.2)
+        self.started = True
+        while self.gameState != sc.GameStateType.FINISHED:
+            time.sleep(0.2)
 
 
 
@@ -95,7 +130,14 @@ def setupLogging():
 
 
 if __name__ == '__main__':
-    setupLogging();
+    logger = utils.setupLogging();
     ref = Referee()
+
+    teamBlue = Process(target=team1.createTeam, args=("Blue",))
+    teamBlue.start()
+
+    teamRed = Process(target=team1.createTeam, args=("Red",))
+    teamRed.start()
+
     ref.runGame()
 
