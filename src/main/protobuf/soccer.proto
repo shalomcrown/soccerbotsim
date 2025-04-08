@@ -51,6 +51,7 @@ message PlayerIdentification {
 	float initialPotentialEnergy = 4;
 	bool active = 5;
 	Vec3 startPosition = 6;
+	float radius = 7;
 }
 
 message TeamSetup {

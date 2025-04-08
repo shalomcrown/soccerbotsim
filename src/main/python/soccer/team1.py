@@ -16,6 +16,7 @@ import traceback
 import datetime
 import sys
 import logging.handlers
+import math
 
 import paho.mqtt.client as mqtt
 
@@ -98,8 +99,22 @@ class Team:
                 player.mass = msg.teamPlayersTotalMass / msg.playersPerTeam
                 player.initialPotentialEnergy = msg.teamPlayersTotalPotentialEnergy / msg.playersPerTeam
                 player.active = True
+                player.name = utils.getMaleName()
 
+                player.radius = math.sqrt(msg.teamPlayersTotalArea / msg.playersPerTeam / math.pi)
 
+                if playerNum == 0:
+                    line = shapely.LineString((self.pitchCenter, self.ourGoalCenter, ))
+                    distanceFromCenter = 1.5 if self.ourDisposition.kickingOff else 9.15 
+                    pos = shapely.line_interpolate_point(line, distanceFromCenter)
+                    player.startPosition = sc.Vec3(pos.x, pos.y)
+
+                else:
+                    # TODO: Get player positions from template
+                    # For now, only one player.
+                    pass
+                        
+                self.teamSetup.players.append(player)
 
 
         

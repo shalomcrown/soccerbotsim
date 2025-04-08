@@ -39,8 +39,8 @@ class Referee:
         self.gameState.gameState = sc.GameStateType.WAITING_FOR_TEAMS
         self.teamNames = []
 
-        self.pitchLength = 200
-        self.pitchWidth = 100
+        self.pitchLength = 105
+        self.pitchWidth = 68
 
         self.gameSetup = sc.GameSetup()
         self.gameSetup.pitchCorners.extend([
@@ -121,11 +121,11 @@ class Referee:
                         sc.Vec3(x = i * self.pitchLength / len(self.teamNames), y = self.pitchWidth),
                         ))
                     
-                    teamDisposition.ownGoal.height = 3
+                    teamDisposition.ownGoal.height = 2.44
                     teamDisposition.ownGoal.post1.x = i * self.pitchLength
-                    teamDisposition.ownGoal.post1.y = self.pitchWidth / 2 - 3
+                    teamDisposition.ownGoal.post1.y = self.pitchWidth / 2 - 3.66
                     teamDisposition.ownGoal.post2.x = i * self.pitchLength
-                    teamDisposition.ownGoal.post2.y = self.pitchWidth / 2 + 3
+                    teamDisposition.ownGoal.post2.y = self.pitchWidth / 2 + 3.66
 
                     teamDisposition.kickingOff = True if i == 0 else False
                     self.gameSetup.teamsDispositions.append(teamDisposition)
