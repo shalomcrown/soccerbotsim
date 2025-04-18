@@ -58,6 +58,7 @@ class Team:
         self.participant.participantType = sc.ParticipantType.TEAM
 
         self.teamTopic = utils.PARTICIPANTS_TOPIC + f"{teamName}"
+        self.myTeamTopic = utils.TEAMS + teamName
 
         logger.debug("Publish participant")
         self.mqclient.publish(utils.PARTICIPANTS_TOPIC, self.participant.SerializeToString(), retain=False)
@@ -74,7 +75,7 @@ class Team:
         msg.ParseFromString(message.payload)
 
         if len(msg.teamsDispositions) > 0:
-            logger.debug(f"Have dispositions - can create team:\n {msg}")
+            logger.debug(f"Have dispositions - can create team")
             self.ourDisposition = next(x for x in msg.teamsDispositions if x.teamName == self.teamName)
 
             # For now teams only have one player.
@@ -107,7 +108,8 @@ class Team:
                     line = shapely.LineString((self.pitchCenter, self.ourGoalCenter, ))
                     distanceFromCenter = 1.5 if self.ourDisposition.kickingOff else 9.15 
                     pos = shapely.line_interpolate_point(line, distanceFromCenter)
-                    player.startPosition = sc.Vec3(pos.x, pos.y)
+                    player.startPosition.x = pos.x
+                    player.startPosition.y = pos.y
 
                 else:
                     # TODO: Get player positions from template
@@ -116,10 +118,12 @@ class Team:
                         
                 self.teamSetup.players.append(player)
 
+            setupRequest = sc.TeamRequest()
+            setupRequest.teamSetup.CopyFrom(self.teamSetup)
+            self.mqclient.publish(self.myTeamTopic, setupRequest.SerializeToString())
 
-        
 
-
+    #=================================================================================
 
     def otherMessages(self, client, userdata, message):
         logger.debug(f"{self.teamName} Message {message} from {message.topic}")

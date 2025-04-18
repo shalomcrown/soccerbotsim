@@ -38,6 +38,7 @@ class Referee:
         self.started = False
         self.gameState.gameState = sc.GameStateType.WAITING_FOR_TEAMS
         self.teamNames = []
+        self.teamSetups = {}
 
         self.pitchLength = 105
         self.pitchWidth = 68
@@ -143,6 +144,41 @@ class Referee:
             return
         logger.debug(f"Message {message} from {message.topic}")
 
+        teamName = os.path.basename(message.topic)
+
+        if not teamName in self.teamNames:
+            logger.debug(f"Message not from known teram - ignore")
+            return
+        
+        msg = sc.TeamRequest()
+        msg.ParseFromString(message.payload)
+
+        if msg.HasField("teamSetup"):
+            if self.gameState.gameState == sc.GameStateType.WAITING_FOR_TEAMS:
+                self.teamSetups[teamName] = msg.teamSetup
+
+                if len(self.teamSetups) == 2:
+                    logger.debug("Have all setups, publish state")
+                    for teamName, teamSetup in self.teamSetups.items():
+                        teamState = sc.TeamState()
+                        teamState.teamName = teamName
+                        
+                        for player in msg.teamSetup.players:
+                            if player.active:
+                                playerState = sc.PlayerState()
+                                playerState.jerseyNumber = player.jerseyNumber
+                                playerState.teamName = teamName
+                                playerState.position.CopyFrom(player.startPosition)
+                                teamState.playerStates.append(playerState)
+
+                        self.gameState.teamStates.append(teamState)
+
+                    self.gameState.gameState = sc.GameStateType.WAITING_KICKOFF
+                    self.mqclient.publish(utils.GAME_STATE_TOPIC, self.gameState.SerializeToString())
+
+        
+    #=================================================================================
+    
     def otherMessages(self, client, userdata, message):
         if not self.started:
             logger.debug(f"Ignore Message {message} from {message.topic}")

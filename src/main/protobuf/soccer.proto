@@ -70,7 +70,7 @@ message PlayerState {
 message TeamState {
 	string teamName = 1;
 	string goals = 2;
-	repeated PlayerState playerState = 3;
+	repeated PlayerState playerStates = 3;
 }
 
 message BallState {
@@ -85,6 +85,8 @@ enum GameStateType {
 	BREAK = 2;
 	FINISHED = 3;
 	WAITING_FOR_TEAMS = 4;
+	IN_PROGRESS = 5;
+	WAITING_KICKOFF = 6;
 }
 
 message GameState {
@@ -120,5 +122,8 @@ message PlayerMovementRequest {
 	Vec3 impulseDirection = 5;
 }
 
-
+message TeamRequest {
+	optional TeamSetup teamSetup = 1;
+	repeated PlayerMovementRequest movementRequests = 2;
+}
 

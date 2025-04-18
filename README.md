@@ -92,32 +92,6 @@ x increasing to the right. The values are meters.
 However the idea can be extended to non rectangular pitches, more than
 two teams, and more than one ball.
 
-## Flow
-
-The main flow is as follows:
-- Participants connect to the message broker and send their 
-*ParticipantConnection* messages as retained, to topic soccer/participants/xxxx where xxxx is the participant name.
-
-- Teams use the topic soccer/team/xxxx to send private information to the referee where xxxx is the name of the team
-
-- The referee uses the topic soccer/game to publish information visible to 
-everyone.
-
-- The referee publishes the GameSetup message (retained) on this topic, and the teams reply with their TeamSetup messages on their private topics soccer/game/team-name/setup. The 
-team kicking off has its chosen player in the center circle, and the other
-team(s) has its players outside this circle. These are indicated by the 
-starting positions.
-
-- Once that has been done, the referee publishes the initial GameState on soccer/game/state and sets it to retained.
-
-- Then the referee publishes a GameEvent which specifies which team kicks 
-off. At this stage. both teams have 
-
-- The team indicated to kick off may now apply a force to its designated player until it contacts the ball, and play starts
-
-- After this point, teams may request application of force to their players
-at will under the rules of the game.
-
 ## Implementation
 Having suggested some of that, let's look towards implementation.
 
@@ -138,4 +112,34 @@ Another option is ASN.1, but this adds a lot of difficulty for programmers.
 
 Ubuntu offers a number of MQTT servers: Mosquitto, EJabberd
 So we're going with Mosquitto. It doesn't really matter what server you use, but I need to test them for other reasons.
+
+## Flow
+
+The main flow is as follows:
+- Participants connect to the message broker and send their 
+*ParticipantConnection* messages as retained, to topic soccer/participants/xxxx where xxxx is the participant name.
+
+- Teams use the topic soccer/team/xxxx to send private information to the referee where xxxx is the name of the team. This has a soccer/team/xxxx/setup for the initial setup message, 
+and a soccer/team/xxxx/setup
+
+
+- The referee uses the topic soccer/game to publish information visible to 
+everyone.
+
+- The referee publishes the GameSetup message (retained) on this topic, and the teams reply with their TeamSetup messages on their private topics soccer/game/team-name/setup. The 
+team kicking off has its chosen player in the center circle, and the other
+team(s) has its players outside this circle. These are indicated by the 
+starting positions.
+
+- Once that has been done, the referee publishes the initial GameState on soccer/game/state and sets it to retained.
+
+- Then the referee publishes a GameEvent which specifies which team kicks 
+off. At this stage. both teams have 
+
+- The team indicated to kick off may now apply a force to its designated player until it contacts the ball, and play starts
+
+- After this point, teams may request application of force to their players
+at will under the rules of the game.
+
+
 

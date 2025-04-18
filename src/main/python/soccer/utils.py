@@ -15,7 +15,8 @@ GAME_TOPIC = "soccer/game"
 GAME_STATE_TOPIC = "soccer/game/state"
 GAME_EVENT_TOPIC = "soccer/game/event"
 PARTICIPANTS_TOPIC = "soccer/participants/"
-TEAM_SUB = "soccer/team/#"
+TEAMS = "soccer/team/"
+TEAM_SUB = TEAMS + "#"
 
 last_names = []
 male_names = []
