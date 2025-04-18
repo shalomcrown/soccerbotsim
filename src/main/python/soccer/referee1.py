@@ -23,6 +23,7 @@ sys.path.append(os.path.join(localDir, "../../protobuf"))
 
 import soccer_pb2 as sc
 import team1
+import display1
 import utils
 
 logger = None
@@ -207,6 +208,8 @@ def startup():
 
     teamRed = Process(target=team1.createTeam, args=("Red",))
     teamRed.start()
+
+    display = Process(target=display1.createDisplay)
 
     ref.runGame()    
 
